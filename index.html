@@ -1,0 +1,1636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriCycle AI — The Second Harvest</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome (for extra icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        },
+                        earth: {
+                            50: '#fffbe1',
+                            100: '#fef3c7',
+                            500: '#d97706',
+                            800: '#78350f',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        h1, h2, h3, h4, h5, h6, .font-heading {
+            font-family: 'Outfit', sans-serif;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        /* Scanner Effect */
+        @keyframes scan {
+            0% { top: 0%; opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { top: 100%; opacity: 0.8; }
+        }
+        .scanner-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #10b981, #059669, transparent);
+            box-shadow: 0 0 15px #10b981, 0 0 8px #059669;
+            animation: scan 2s ease-in-out infinite alternate;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .pulse-subtle {
+            animation: pulse-border 2s infinite;
+        }
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col selection:bg-brand-500 selection:text-white">
+
+    <!-- Navigation Bar -->
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                
+                <!-- Logo & Subtitle -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('landing')">
+                    <div class="bg-gradient-to-tr from-brand-700 to-brand-500 text-white p-2.5 rounded-xl shadow-md shadow-brand-500/20 flex items-center justify-center">
+                        <i data-lucide="sprout" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-heading font-extrabold text-xl tracking-tight text-slate-900">AgriCycle <span class="text-brand-600">AI</span></span>
+                            <span class="bg-brand-100 text-brand-800 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-brand-200">The Second Harvest</span>
+                        </div>
+                        <p class="text-xs text-slate-500 hidden sm:block">AI-Powered Post-Harvest Loss Prevention</p>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation Links -->
+                <nav class="hidden md:flex items-center space-x-1 lg:space-x-2 text-sm font-medium">
+                    <button onclick="switchTab('landing')" id="nav-landing" class="nav-btn px-3 py-2 rounded-lg text-slate-600 hover:text-brand-700 hover:bg-brand-50/60 transition-all flex items-center gap-1.5">
+                        <i data-lucide="home" class="w-4 h-4"></i> Home
+                    </button>
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn px-3 py-2 rounded-lg text-slate-600 hover:text-brand-700 hover:bg-brand-50/60 transition-all flex items-center gap-1.5">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+                    </button>
+                    <button onclick="switchTab('add-batch')" id="nav-add-batch" class="nav-btn px-3 py-2 rounded-lg text-slate-600 hover:text-brand-700 hover:bg-brand-50/60 transition-all flex items-center gap-1.5">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i> Add Batch
+                    </button>
+                    <button onclick="switchTab('waste-matcher')" id="nav-waste-matcher" class="nav-btn px-3 py-2 rounded-lg text-slate-600 hover:text-brand-700 hover:bg-brand-50/60 transition-all flex items-center gap-1.5">
+                        <i data-lucide="recycle" class="w-4 h-4"></i> Waste Matcher
+                    </button>
+                    <button onclick="switchTab('history')" id="nav-history" class="nav-btn px-3 py-2 rounded-lg text-slate-600 hover:text-brand-700 hover:bg-brand-50/60 transition-all flex items-center gap-1.5">
+                        <i data-lucide="history" class="w-4 h-4"></i> History
+                    </button>
+                </nav>
+
+                <!-- Status Pill & Action CTA -->
+                <div class="flex items-center gap-3">
+                    <div class="hidden lg:flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200 text-xs">
+                        <span class="w-2 h-2 rounded-full bg-brand-500 animate-ping"></span>
+                        <span class="text-slate-600 font-medium">Neural Model v3.2 Active</span>
+                    </div>
+
+                    <button onclick="switchTab('add-batch')" class="bg-brand-600 hover:bg-brand-700 text-white font-medium text-xs sm:text-sm px-4 py-2 rounded-xl shadow-sm hover:shadow-brand-500/25 transition-all flex items-center gap-2">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i> Analyze Batch
+                    </button>
+
+                    <!-- Mobile menu button -->
+                    <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-menu" class="hidden md:hidden border-t border-slate-200 bg-white px-4 pt-2 pb-4 space-y-1">
+            <button onclick="switchTab('landing'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-lg text-slate-700 hover:bg-brand-50 font-medium flex items-center gap-2">
+                <i data-lucide="home" class="w-4 h-4"></i> Home
+            </button>
+            <button onclick="switchTab('dashboard'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-lg text-slate-700 hover:bg-brand-50 font-medium flex items-center gap-2">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+            </button>
+            <button onclick="switchTab('add-batch'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-lg text-slate-700 hover:bg-brand-50 font-medium flex items-center gap-2">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i> Add Batch
+            </button>
+            <button onclick="switchTab('waste-matcher'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-lg text-slate-700 hover:bg-brand-50 font-medium flex items-center gap-2">
+                <i data-lucide="recycle" class="w-4 h-4"></i> Waste Matcher
+            </button>
+            <button onclick="switchTab('history'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-lg text-slate-700 hover:bg-brand-50 font-medium flex items-center gap-2">
+                <i data-lucide="history" class="w-4 h-4"></i> History
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow">
+
+        <!-- ================= PAGE 1: LANDING PAGE ================= -->
+        <section id="page-landing" class="page-section">
+            <!-- Hero Banner -->
+            <div class="relative overflow-hidden bg-gradient-to-b from-brand-900 via-brand-800 to-slate-900 text-white py-20 lg:py-28 px-4 sm:px-6 lg:px-8">
+                <!-- Decorative background elements -->
+                <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                <div class="absolute -top-40 -right-40 w-96 h-96 bg-brand-500/20 rounded-full blur-3xl"></div>
+                <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-earth-500/20 rounded-full blur-3xl"></div>
+
+                <div class="max-w-5xl mx-auto text-center relative z-10 space-y-6">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-500/20 border border-brand-400/30 text-brand-300 text-xs sm:text-sm font-medium">
+                        <i data-lucide="leaf" class="w-4 h-4"></i> Next-Gen Post-Harvest Intelligence Engine
+                    </div>
+
+                    <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight leading-tight">
+                        Don't just grow more. <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-300 via-emerald-200 to-amber-300">Lose less.</span><br class="hidden sm:inline"> Reuse what remains.
+                    </h1>
+
+                    <p class="max-w-2xl mx-auto text-lg sm:text-xl text-slate-300 font-normal leading-relaxed">
+                        AgriCycle AI evaluates microclimate risk, predicts harvest degradation, and prescribes immediate salvage routes—turning potential field loss into secondary revenue.
+                    </p>
+
+                    <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <button onclick="switchTab('add-batch')" class="w-full sm:w-auto bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold px-8 py-4 rounded-xl shadow-lg shadow-brand-500/25 transition-all text-base flex items-center justify-center gap-2 group">
+                            Get Started Now
+                            <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+                        </button>
+                        <button onclick="switchTab('dashboard')" class="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold px-8 py-4 rounded-xl transition-all text-base flex items-center justify-center gap-2">
+                            <i data-lucide="layout-dashboard" class="w-4 h-4"></i> View Live Dashboard
+                        </button>
+                    </div>
+
+                    <!-- Live Teaser Preview Card -->
+                    <div class="pt-10 max-w-3xl mx-auto">
+                        <div class="glass-card rounded-2xl p-6 text-slate-800 text-left shadow-2xl border border-white/20">
+                            <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+                                <div class="flex items-center gap-3">
+                                    <span class="p-2 bg-red-100 text-red-700 rounded-lg"><i data-lucide="alert-triangle" class="w-5 h-5"></i></span>
+                                    <div>
+                                        <h4 class="font-bold text-slate-900 text-sm">Real-time Batch Scan Preview</h4>
+                                        <p class="text-xs text-slate-500">Tomato Batch #TM-9021 • Ambient Warehouse</p>
+                                    </div>
+                                </div>
+                                <span class="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">84% HIGH RISK</span>
+                            </div>
+                            <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                    <span class="text-slate-500 block">Est. Remaining Shelf Life</span>
+                                    <span class="font-bold text-slate-900 text-base">48 Hours</span>
+                                </div>
+                                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                    <span class="text-slate-500 block">Primary Driver</span>
+                                    <span class="font-bold text-slate-900 text-base">Temp Elevated (+8°C)</span>
+                                </div>
+                                <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl">
+                                    <span class="text-amber-800 font-medium block">AI Salvage Action</span>
+                                    <span class="font-bold text-amber-900 text-base flex items-center gap-1">
+                                        <i data-lucide="cog" class="w-4 h-4"></i> PROCESS FIRST
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Problem & Impact Stats -->
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-20">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white rounded-2xl p-6 shadow-xl border border-slate-100 flex items-start gap-4">
+                        <div class="p-3.5 bg-red-50 text-red-600 rounded-2xl">
+                            <i data-lucide="trending-down" class="w-7 h-7"></i>
+                        </div>
+                        <div>
+                            <span class="text-3xl font-extrabold text-slate-900">1/3</span>
+                            <h3 class="font-semibold text-slate-800 text-sm mt-1">Global Harvest Lost</h3>
+                            <p class="text-xs text-slate-500 mt-1">Over 33% of food harvested never reaches a consumer table worldwide due to post-harvest decay.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow-xl border border-slate-100 flex items-start gap-4">
+                        <div class="p-3.5 bg-earth-50 text-earth-500 rounded-2xl">
+                            <i data-lucide="dollar-sign" class="w-7 h-7"></i>
+                        </div>
+                        <div>
+                            <span class="text-3xl font-extrabold text-slate-900">$1.2 Trillion</span>
+                            <h3 class="font-semibold text-slate-800 text-sm mt-1">Annual Economic Waste</h3>
+                            <p class="text-xs text-slate-500 mt-1">Direct monetary loss suffered by smallholders and distributors due to transit delays & storage gaps.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow-xl border border-slate-100 flex items-start gap-4">
+                        <div class="p-3.5 bg-brand-50 text-brand-600 rounded-2xl">
+                            <i data-lucide="shield-check" class="w-7 h-7"></i>
+                        </div>
+                        <div>
+                            <span class="text-3xl font-extrabold text-slate-900">+45% Value</span>
+                            <h3 class="font-semibold text-slate-800 text-sm mt-1">Recovered via Second Harvest</h3>
+                            <p class="text-xs text-slate-500 mt-1">Diverting at-risk crops into secondary processing or upcycling pathways rescues revenue.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How AI Works Pipeline Step Infographic -->
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+                <div class="text-center max-w-2xl mx-auto mb-14">
+                    <span class="text-brand-600 font-bold text-xs uppercase tracking-wider">Precision Salvage Technology</span>
+                    <h2 class="text-3xl font-bold text-slate-900 mt-1">How AgriCycle AI Protects Your Yield</h2>
+                    <p class="text-slate-500 text-sm mt-2">Our predictive model continuously bridges farm-gate conditions with real-time market opportunities.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+                    <!-- Step 1 -->
+                    <div class="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-sm relative hover:shadow-md transition-shadow">
+                        <div class="w-12 h-12 bg-brand-100 text-brand-700 rounded-2xl flex items-center justify-center font-bold text-xl mb-6">1</div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2">Multimodal Input Sensing</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-4">Inputs harvest timestamp, microclimate metrics (temp & humidity), logistics duration, and crop visual indicators.</p>
+                        <div class="flex items-center gap-2 text-xs text-brand-600 font-medium">
+                            <i data-lucide="check-circle-2" class="w-4 h-4"></i> Visual computer vision inspection
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-sm relative hover:shadow-md transition-shadow">
+                        <div class="w-12 h-12 bg-amber-100 text-amber-700 rounded-2xl flex items-center justify-center font-bold text-xl mb-6">2</div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2">Predictive Spoilage Modeling</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-4">Neural algorithms correlate temperature degradation curves against respiration rates to forecast exact shelf-life remaining.</p>
+                        <div class="flex items-center gap-2 text-xs text-amber-600 font-medium">
+                            <i data-lucide="check-circle-2" class="w-4 h-4"></i> Real-time microclimate math
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-sm relative hover:shadow-md transition-shadow">
+                        <div class="w-12 h-12 bg-emerald-100 text-emerald-800 rounded-2xl flex items-center justify-center font-bold text-xl mb-6">3</div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2">Actionable Route Recommendation</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-4">Instantly routes batch output: direct immediate market sale, value-add bio-processing, or optimal cold-chain storage.</p>
+                        <div class="flex items-center gap-2 text-xs text-emerald-700 font-medium">
+                            <i data-lucide="check-circle-2" class="w-4 h-4"></i> Integrated Waste-to-Product Matcher
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-16 text-center">
+                    <button onclick="switchTab('add-batch')" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-8 py-3.5 rounded-xl transition-all shadow-md inline-flex items-center gap-2">
+                        <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                        Analyze Your First Crop Batch
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 2: FARMER DASHBOARD ================= -->
+        <section id="page-dashboard" class="page-section hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+            
+            <!-- Dashboard Top Header Bar -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Farmer Command Dashboard</h1>
+                    <p class="text-slate-500 text-sm">Real-time inventory deterioration monitoring & automated salvage decisions.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="switchTab('add-batch')" class="bg-brand-600 hover:bg-brand-700 text-white font-medium text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-sm transition-all flex items-center gap-2">
+                        <i data-lucide="plus" class="w-4 h-4"></i> New Batch Log
+                    </button>
+                    <button onclick="refreshDashboard()" class="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 p-2.5 rounded-xl shadow-sm">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Top Key Metrics Cards Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                <!-- Total Quantity -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+                        <span>Total Quantity</span>
+                        <i data-lucide="package" class="w-4 h-4 text-slate-400"></i>
+                    </div>
+                    <div class="mt-2 text-2xl font-extrabold text-slate-900" id="dash-stat-total-qty">18,450 <span class="text-xs font-normal text-slate-500">kg</span></div>
+                    <span class="text-[11px] text-slate-500">Across 12 Active Batches</span>
+                </div>
+
+                <!-- High Risk -->
+                <div class="bg-white p-4 rounded-2xl border border-red-200 shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-12 h-12 bg-red-500/10 rounded-bl-full"></div>
+                    <div class="flex items-center justify-between text-red-600 text-xs font-medium">
+                        <span>High Risk</span>
+                        <i data-lucide="alert-triangle" class="w-4 h-4 text-red-500"></i>
+                    </div>
+                    <div class="mt-2 text-2xl font-extrabold text-red-600" id="dash-stat-high">3</div>
+                    <span class="text-[11px] text-red-500 font-medium">Action Required Immediately</span>
+                </div>
+
+                <!-- Medium Risk -->
+                <div class="bg-white p-4 rounded-2xl border border-amber-200 shadow-sm">
+                    <div class="flex items-center justify-between text-amber-700 text-xs font-medium">
+                        <span>Medium Risk</span>
+                        <i data-lucide="clock" class="w-4 h-4 text-amber-500"></i>
+                    </div>
+                    <div class="mt-2 text-2xl font-extrabold text-amber-600" id="dash-stat-medium">4</div>
+                    <span class="text-[11px] text-amber-600 font-medium">Monitor Shelf-life</span>
+                </div>
+
+                <!-- Low Risk -->
+                <div class="bg-white p-4 rounded-2xl border border-brand-200 shadow-sm">
+                    <div class="flex items-center justify-between text-brand-700 text-xs font-medium">
+                        <span>Low Risk</span>
+                        <i data-lucide="check-circle" class="w-4 h-4 text-brand-500"></i>
+                    </div>
+                    <div class="mt-2 text-2xl font-extrabold text-brand-600" id="dash-stat-low">5</div>
+                    <span class="text-[11px] text-brand-600 font-medium">Optimal Conditions</span>
+                </div>
+
+                <!-- Value Protected -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+                        <span>Saved Loss Value</span>
+                        <i data-lucide="dollar-sign" class="w-4 h-4 text-emerald-500"></i>
+                    </div>
+                    <div class="mt-2 text-2xl font-extrabold text-emerald-600">$14,280</div>
+                    <span class="text-[11px] text-emerald-600 font-medium">+18% vs last month</span>
+                </div>
+
+                <!-- Upcycled Waste -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="flex items-center justify-between text-slate-500 text-xs font-medium">
+                        <span>Upcycled Yield</span>
+                        <i data-lucide="recycle" class="w-4 h-4 text-earth-500"></i>
+                    </div>
+                    <div class="mt-2 text-2xl font-extrabold text-earth-800">2,800 <span class="text-xs font-normal text-slate-500">kg</span></div>
+                    <span class="text-[11px] text-earth-800 font-medium">Diverted from landfill</span>
+                </div>
+            </div>
+
+            <!-- Priority High Risk Alerts Banner -->
+            <div id="priority-alerts-container" class="space-y-3">
+                <!-- Dynamically generated priority banners -->
+            </div>
+
+            <!-- Analytics Charts Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Chart 1: Risk Overview Doughnut -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-slate-900 text-base">Spoilage Risk Portfolio</h3>
+                        <span class="text-xs text-slate-400">Current Batches</span>
+                    </div>
+                    <div class="relative h-60 flex items-center justify-center">
+                        <canvas id="chart-risk-doughnut"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 2: Temperature & Humidity Trend -->
+                <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-base">Ambient Storage Stress Profile</h3>
+                            <p class="text-xs text-slate-500">Microclimate exposure curve vs optimal thresholds</p>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> Temp (°C)</span>
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Humidity (%)</span>
+                        </div>
+                    </div>
+                    <div class="h-60">
+                        <canvas id="chart-ambient-trend"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Batches Active Grid -->
+            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-lg">Active Consignment Monitor</h3>
+                        <p class="text-xs text-slate-500">Batches currently under automated AI degradation tracking</p>
+                    </div>
+                    <button onclick="switchTab('history')" class="text-xs font-semibold text-brand-600 hover:text-brand-700 flex items-center gap-1">
+                        View Full History & Export <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="recent-batches-grid">
+                    <!-- Dynamic Batches Render Here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 3: ADD CROP BATCH PAGE ================= -->
+        <section id="page-add-batch" class="page-section hidden max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+            <div>
+                <span class="text-brand-600 font-bold text-xs uppercase tracking-wider">AI Input Studio</span>
+                <h1 class="text-3xl font-extrabold text-slate-900 mt-1">Log & Analyze Crop Batch</h1>
+                <p class="text-slate-500 text-sm">Provide microclimate and storage parameters to run predictive spoilage neural analysis.</p>
+            </div>
+
+            <!-- Hackathon Demo Quick Presets -->
+            <div class="bg-slate-100 p-4 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-2 text-xs text-slate-700 font-semibold">
+                    <i data-lucide="zap" class="w-4 h-4 text-amber-500"></i> Demo Presets:
+                </div>
+                <div class="flex flex-wrap gap-2 text-xs">
+                    <button onclick="applyPreset('tomato-high')" class="bg-white hover:bg-red-50 text-red-700 border border-red-200 px-3 py-1.5 rounded-lg font-medium transition-colors">
+                        🚨 High-Risk Tomato
+                    </button>
+                    <button onclick="applyPreset('mango-cold')" class="bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-lg font-medium transition-colors">
+                        🧊 Stable Mango (Cold)
+                    </button>
+                    <button onclick="applyPreset('spinach-moist')" class="bg-white hover:bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-lg font-medium transition-colors">
+                        ⚙️ Moist Spinach
+                    </button>
+                </div>
+            </div>
+
+            <!-- Form Container -->
+            <form id="batch-form" onsubmit="handleAnalyzeSubmit(event)" class="bg-white rounded-2xl border border-slate-200/80 shadow-md p-6 sm:p-8 space-y-8">
+                
+                <!-- Section 1: Basic Details -->
+                <div class="space-y-4">
+                    <h3 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                        <i data-lucide="sprout" class="w-4 h-4 text-brand-600"></i> 1. Crop Identification & Volume
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Crop Type *</label>
+                            <select id="input-crop" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                <option value="Tomatoes">Tomatoes</option>
+                                <option value="Mangoes">Mangoes</option>
+                                <option value="Potatoes">Potatoes</option>
+                                <option value="Strawberries">Strawberries</option>
+                                <option value="Bananas">Bananas</option>
+                                <option value="Spinach">Spinach</option>
+                                <option value="Onions">Onions</option>
+                                <option value="Apples">Apples</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Quantity (kg) *</label>
+                            <input type="number" id="input-quantity" min="10" max="100000" value="1500" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Harvest Date *</label>
+                            <input type="date" id="input-date" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Storage & Environmental Microclimate -->
+                <div class="space-y-4">
+                    <h3 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                        <i data-lucide="thermometer" class="w-4 h-4 text-brand-600"></i> 2. Storage Microclimate
+                    </h3>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Storage Type</label>
+                            <select id="input-storage" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                <option value="Ambient Warehouse">Ambient Warehouse</option>
+                                <option value="Cold Storage">Cold Storage Unit</option>
+                                <option value="Shaded Shed">Shaded Farm Shed</option>
+                                <option value="Open Air Truck">Open Transport Truck</option>
+                            </select>
+                        </div>
+
+                        <!-- Temp Slider -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="text-xs font-semibold text-slate-700">Storage Temp (°C)</label>
+                                <span id="temp-val-display" class="text-xs font-bold text-brand-600">28°C</span>
+                            </div>
+                            <input type="range" id="input-temp" min="2" max="45" value="28" oninput="document.getElementById('temp-val-display').innerText = this.value + '°C'" class="w-full accent-brand-600 cursor-pointer">
+                            <div class="flex justify-between text-[10px] text-slate-400 mt-1">
+                                <span>2°C (Cold)</span>
+                                <span>25°C</span>
+                                <span>45°C (Extreme)</span>
+                            </div>
+                        </div>
+
+                        <!-- Humidity Slider -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="text-xs font-semibold text-slate-700">Humidity (%)</label>
+                                <span id="humidity-val-display" class="text-xs font-bold text-brand-600">82%</span>
+                            </div>
+                            <input type="range" id="input-humidity" min="20" max="98" value="82" oninput="document.getElementById('humidity-val-display').innerText = this.value + '%'" class="w-full accent-brand-600 cursor-pointer">
+                            <div class="flex justify-between text-[10px] text-slate-400 mt-1">
+                                <span>20% (Dry)</span>
+                                <span>60%</span>
+                                <span>98% (Saturated)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Logistics & Market Parameters -->
+                <div class="space-y-4">
+                    <h3 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                        <i data-lucide="truck" class="w-4 h-4 text-brand-600"></i> 3. Logistics & Market Proximity
+                    </h3>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Estimated Transport Time (Hours)</label>
+                            <input type="number" id="input-transport" min="1" max="120" value="18" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Current Target Market Demand</label>
+                            <select id="input-demand" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                <option value="High Demand">High Demand (Favorable Price)</option>
+                                <option value="Moderate">Moderate Demand</option>
+                                <option value="Market Glut / Over-supplied">Market Glut (Low Local Price)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4: Image Visual Inspection (Simulated Scanner) -->
+                <div class="space-y-4">
+                    <h3 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+                        <i data-lucide="camera" class="w-4 h-4 text-brand-600"></i> 4. Visual Quality Inspection (Optional AI Vision Scan)
+                    </h3>
+
+                    <div id="dropzone" class="border-2 border-dashed border-slate-300 hover:border-brand-500 rounded-2xl p-6 text-center cursor-pointer transition-colors bg-slate-50/50 relative overflow-hidden">
+                        <input type="file" id="file-input" accept="image/*" class="hidden" onchange="handleImageUpload(this)">
+                        
+                        <div id="upload-placeholder" class="space-y-2" onclick="document.getElementById('file-input').click()">
+                            <div class="w-12 h-12 bg-brand-50 text-brand-600 rounded-full flex items-center justify-center mx-auto">
+                                <i data-lucide="upload-cloud" class="w-6 h-6"></i>
+                            </div>
+                            <p class="text-sm font-semibold text-slate-700">Click or drag image to scan surface mold/bruising</p>
+                            <p class="text-xs text-slate-400">Supports JPG, PNG (Max 10MB)</p>
+                        </div>
+
+                        <!-- Image Preview Overlay with Scanner -->
+                        <div id="upload-preview" class="hidden relative max-w-sm mx-auto">
+                            <img id="preview-img" src="" alt="Crop Preview" class="w-full h-48 object-cover rounded-xl shadow-md">
+                            <div class="scanner-line"></div>
+                            <div class="absolute bottom-2 left-2 bg-slate-900/80 backdrop-blur-md text-white text-[11px] font-mono px-2.5 py-1 rounded-md flex items-center gap-1.5">
+                                <i data-lucide="scan" class="w-3.5 h-3.5 text-brand-400"></i> AI Computer Vision Scanning Spotting...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-4">
+                    <button type="submit" id="btn-analyze" class="w-full bg-gradient-to-r from-brand-700 via-brand-600 to-emerald-600 hover:from-brand-800 hover:to-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-brand-500/25 transition-all text-base flex items-center justify-center gap-2">
+                        <i data-lucide="cpu" class="w-5 h-5"></i>
+                        <span>ANALYZE BATCH WITH AGRICYCLE AI</span>
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- ================= PAGE 4: AI ANALYSIS RESULT MODAL ================= -->
+        <div id="modal-result" class="fixed inset-0 z-50 hidden bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+            <div class="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-100 overflow-hidden relative my-8 animate-in fade-in zoom-in duration-200">
+                
+                <!-- Modal Header -->
+                <div class="bg-slate-900 text-white p-6 relative">
+                    <button onclick="closeResultModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white p-2 rounded-full hover:bg-slate-800 transition-colors">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                    <div class="flex items-center gap-2 text-xs text-brand-400 font-mono">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i> Evaluation Complete • <span id="res-batch-id">AG-8092</span>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-white mt-1" id="res-title">Tomato Batch Analysis</h2>
+                    <p class="text-slate-400 text-xs mt-0.5" id="res-subtitle">Quantity: 1,500 kg • Harvested today</p>
+                </div>
+
+                <!-- Loading Overlay State inside modal -->
+                <div id="res-loading" class="p-12 text-center space-y-4">
+                    <div class="w-16 h-16 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                    <p class="font-bold text-slate-800 text-lg" id="res-loading-text">Correlating Microclimate Metrics...</p>
+                    <p class="text-xs text-slate-400">Evaluating respiration degradation rates against target market distance.</p>
+                </div>
+
+                <!-- Loaded Content -->
+                <div id="res-content" class="p-6 sm:p-8 space-y-6 hidden">
+                    
+                    <!-- Gauge & Overview Stats -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 p-5 rounded-2xl border border-slate-200/80">
+                        
+                        <!-- Spoilage Risk Gauge -->
+                        <div class="text-center sm:border-r sm:border-slate-200 pr-2 flex flex-col justify-center items-center">
+                            <span class="text-xs font-semibold text-slate-500 uppercase">Spoilage Risk Score</span>
+                            <div class="relative inline-flex items-center justify-center my-2">
+                                <span class="text-3xl font-black" id="res-risk-score-num">84%</span>
+                            </div>
+                            <span id="res-risk-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">
+                                HIGH RISK
+                            </span>
+                        </div>
+
+                        <!-- Est Shelf Life -->
+                        <div class="text-center sm:border-r sm:border-slate-200 px-2 flex flex-col justify-center items-center">
+                            <span class="text-xs font-semibold text-slate-500 uppercase">Estimated Shelf Life</span>
+                            <span class="text-2xl font-extrabold text-slate-900 my-1" id="res-shelf-life">48 Hours</span>
+                            <span class="text-[11px] text-slate-500">Without refrigeration</span>
+                        </div>
+
+                        <!-- Model Confidence -->
+                        <div class="text-center px-2 flex flex-col justify-center items-center">
+                            <span class="text-xs font-semibold text-slate-500 uppercase">Neural Confidence</span>
+                            <span class="text-2xl font-extrabold text-brand-600 my-1" id="res-confidence">94.2%</span>
+                            <span class="text-[11px] text-slate-500">2,400 dataset validation</span>
+                        </div>
+                    </div>
+
+                    <!-- Recommendation HERO CARD -->
+                    <div id="res-rec-card" class="p-6 rounded-2xl border-2 text-left transition-all">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <span class="text-xs font-extrabold tracking-wider uppercase opacity-80">AI Recommended Action</span>
+                                <h3 class="text-2xl font-black mt-1 flex items-center gap-2" id="res-rec-action">
+                                    🚨 SELL NOW
+                                </h3>
+                            </div>
+                            <span class="text-xs font-bold px-3 py-1 rounded-full bg-white/80 border shadow-sm" id="res-rec-tag">Optimal Salvage Route</span>
+                        </div>
+                        <p class="text-sm mt-3 leading-relaxed opacity-90" id="res-rec-description">
+                            Due to elevated temperature (28°C) and transport delay, immediate sale to a local quick-turnaround buyer is recommended to prevent full degradation.
+                        </p>
+                    </div>
+
+                    <!-- Contributing Causes Breakdown -->
+                    <div class="space-y-2">
+                        <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Primary Risk Drivers Identified</h4>
+                        <div class="space-y-2" id="res-causes-list">
+                            <!-- Dynamic Causes List -->
+                        </div>
+                    </div>
+
+                    <!-- Footer Action Buttons -->
+                    <div class="pt-4 border-t border-slate-100 flex flex-col sm:flex-row gap-3">
+                        <button onclick="saveAndGoToDashboard()" class="flex-1 bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl shadow-md transition-all text-sm flex items-center justify-center gap-2">
+                            <i data-lucide="check-circle" class="w-4 h-4"></i> Accept & Save to Dashboard
+                        </button>
+                        <button onclick="goToWasteMatcherWithCrop()" class="flex-1 bg-earth-50 hover:bg-earth-100 text-earth-800 border border-earth-200 font-bold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-2">
+                            <i data-lucide="recycle" class="w-4 h-4"></i> Match Upcycle Pathways
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PAGE 5: WASTE-TO-PRODUCT MATCHER ================= -->
+        <section id="page-waste-matcher" class="page-section hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <span class="text-earth-500 font-bold text-xs uppercase tracking-wider">Circular Economy Engine</span>
+                    <h1 class="text-3xl font-extrabold text-slate-900 mt-1">Waste-to-Product Matcher</h1>
+                    <p class="text-slate-500 text-sm">Discover profitable second-life pathways for rejected crop batches, peels, and bruised yield.</p>
+                </div>
+
+                <!-- Calculator Quick Drawer Link -->
+                <button onclick="openCalculatorModal()" class="bg-earth-500 hover:bg-earth-800 text-white font-medium text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-md transition-all flex items-center gap-2">
+                    <i data-lucide="calculator" class="w-4 h-4"></i> Upcycle Value Calculator
+                </button>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row gap-3 items-center justify-between">
+                <div class="flex flex-wrap gap-2 w-full sm:w-auto text-xs">
+                    <button onclick="filterWaste('ALL')" class="waste-filter-btn px-3 py-2 rounded-xl font-medium bg-brand-600 text-white" id="wf-ALL">All Pathways</button>
+                    <button onclick="filterWaste('Tomatoes')" class="waste-filter-btn px-3 py-2 rounded-xl font-medium bg-slate-100 text-slate-700 hover:bg-slate-200" id="wf-Tomatoes">Tomatoes</button>
+                    <button onclick="filterWaste('Mangoes')" class="waste-filter-btn px-3 py-2 rounded-xl font-medium bg-slate-100 text-slate-700 hover:bg-slate-200" id="wf-Mangoes">Mangoes</button>
+                    <button onclick="filterWaste('Potatoes')" class="waste-filter-btn px-3 py-2 rounded-xl font-medium bg-slate-100 text-slate-700 hover:bg-slate-200" id="wf-Potatoes">Potatoes</button>
+                    <button onclick="filterWaste('Strawberries')" class="waste-filter-btn px-3 py-2 rounded-xl font-medium bg-slate-100 text-slate-700 hover:bg-slate-200" id="wf-Strawberries">Strawberries</button>
+                </div>
+
+                <div class="relative w-full sm:w-64">
+                    <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
+                    <input type="text" id="waste-search" onkeyup="searchWasteCards()" placeholder="Search pathways..." class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+            </div>
+
+            <!-- Pathways Catalog Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="waste-catalog-grid">
+                <!-- Dynamically Rendered Waste Cards -->
+            </div>
+        </section>
+
+        <!-- ================= PAGE 6: DECISION HISTORY ================= -->
+        <section id="page-history" class="page-section hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl font-extrabold text-slate-900">Decision & Log History</h1>
+                    <p class="text-slate-500 text-sm">Comprehensive audit trail of past crop batch scans and salvaging records.</p>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button onclick="exportToCSV()" class="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs sm:text-sm font-medium px-4 py-2.5 rounded-xl shadow-sm flex items-center gap-2">
+                        <i data-lucide="download" class="w-4 h-4"></i> Export CSV
+                    </button>
+                </div>
+            </div>
+
+            <!-- Table Filters Bar -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between">
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <span class="text-xs text-slate-500 font-medium">Filter Risk:</span>
+                    <select id="history-filter-risk" onchange="renderHistoryTable()" class="bg-slate-50 border border-slate-200 text-xs rounded-xl px-3 py-1.5 focus:outline-none">
+                        <option value="ALL">All Risks</option>
+                        <option value="HIGH">High Risk</option>
+                        <option value="MEDIUM">Medium Risk</option>
+                        <option value="LOW">Low Risk</option>
+                    </select>
+                </div>
+
+                <div class="relative w-full sm:w-72">
+                    <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
+                    <input type="text" id="history-search" onkeyup="renderHistoryTable()" placeholder="Search crop or batch ID..." class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+            </div>
+
+            <!-- History Table Card -->
+            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider">
+                                <th class="p-4">Batch ID</th>
+                                <th class="p-4">Crop</th>
+                                <th class="p-4">Quantity</th>
+                                <th class="p-4">Temp / Humidity</th>
+                                <th class="p-4">Risk Score</th>
+                                <th class="p-4">Recommendation</th>
+                                <th class="p-4">Log Date</th>
+                                <th class="p-4">Status</th>
+                                <th class="p-4 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body" class="divide-y divide-slate-100">
+                            <!-- Dynamic Table Rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Upcycle Value Calculator Modal -->
+        <div id="modal-calc" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl p-6 relative">
+                <button onclick="closeCalculatorModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+                <div class="flex items-center gap-2 text-earth-800 font-bold text-sm mb-4">
+                    <i data-lucide="calculator" class="w-5 h-5"></i> Upcycle Value Calculator
+                </div>
+
+                <div class="space-y-4 text-xs">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Waste Weight (Tons)</label>
+                        <input type="number" id="calc-tons" value="5" oninput="runCalculator()" class="w-full p-2.5 border rounded-xl bg-slate-50 font-bold text-sm">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Select Upcycle Recipe</label>
+                        <select id="calc-recipe" onchange="runCalculator()" class="w-full p-2.5 border rounded-xl bg-slate-50 font-medium">
+                            <option value="180">Tomato Puree & Sauce Base ($180/Ton)</option>
+                            <option value="320">Mango Dried Strips ($320/Ton)</option>
+                            <option value="210">Potato Starch Isolation ($210/Ton)</option>
+                            <option value="90">Organic Bio-Compost ($90/Ton)</option>
+                        </select>
+                    </div>
+
+                    <div class="bg-earth-50 p-4 rounded-2xl border border-earth-200 mt-4 text-center">
+                        <span class="text-earth-800 font-medium block">Estimated Recovered Value</span>
+                        <span class="text-3xl font-extrabold text-earth-800 mt-1 block" id="calc-result-val">$900.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Application Logic Script -->
+    <script>
+        /* ================= SAMPLE DATA INITIALIZATION ================= */
+        let sampleBatches = [
+            {
+                id: "AG-9021",
+                crop: "Tomatoes",
+                quantity: 2400,
+                harvestDate: "2026-09-24",
+                storage: "Ambient Warehouse",
+                temp: 29,
+                humidity: 84,
+                transportHours: 24,
+                demand: "Market Glut",
+                riskScore: 88,
+                riskLevel: "HIGH",
+                shelfLife: "36-48 Hours",
+                recommendation: "PROCESS FIRST",
+                causes: ["Ambient temperature exceeds optimal (+9°C)", "High humidity risk of fungal mold", "Transit delay exceeds fresh window"],
+                logDate: "2026-09-25",
+                status: "Pending Action"
+            },
+            {
+                id: "AG-8842",
+                crop: "Mangoes",
+                quantity: 4500,
+                harvestDate: "2026-09-23",
+                storage: "Cold Storage",
+                temp: 12,
+                humidity: 65,
+                transportHours: 12,
+                demand: "High Demand",
+                riskScore: 22,
+                riskLevel: "LOW",
+                shelfLife: "14-18 Days",
+                recommendation: "STORE",
+                causes: ["Controlled temperature maintained", "Low respiration degradation"],
+                logDate: "2026-09-24",
+                status: "In Storage"
+            },
+            {
+                id: "AG-8701",
+                crop: "Strawberries",
+                quantity: 850,
+                harvestDate: "2026-09-25",
+                storage: "Open Air Truck",
+                temp: 26,
+                humidity: 78,
+                transportHours: 8,
+                demand: "High Demand",
+                riskScore: 79,
+                riskLevel: "HIGH",
+                shelfLife: "24-36 Hours",
+                recommendation: "SELL NOW",
+                causes: ["High perishability crop type", "Unrefrigerated open transport"],
+                logDate: "2026-09-25",
+                status: "Actioned"
+            },
+            {
+                id: "AG-8620",
+                crop: "Potatoes",
+                quantity: 8000,
+                harvestDate: "2026-09-20",
+                storage: "Shaded Shed",
+                temp: 20,
+                humidity: 55,
+                transportHours: 36,
+                demand: "Moderate",
+                riskScore: 48,
+                riskLevel: "MEDIUM",
+                shelfLife: "20-30 Days",
+                recommendation: "STORE",
+                causes: ["Moderate ambient storage", "Dormancy stable"],
+                logDate: "2026-09-21",
+                status: "In-Transit"
+            },
+            {
+                id: "AG-8410",
+                crop: "Spinach",
+                quantity: 1200,
+                harvestDate: "2026-09-24",
+                storage: "Ambient Warehouse",
+                temp: 27,
+                humidity: 90,
+                transportHours: 10,
+                demand: "Moderate",
+                riskScore: 82,
+                riskLevel: "HIGH",
+                shelfLife: "24 Hours",
+                recommendation: "PROCESS FIRST",
+                causes: ["Excessive humidity causing leaf rot", "High ambient heat"],
+                logDate: "2026-09-25",
+                status: "Pending Action"
+            }
+        ];
+
+        let wastePathways = [
+            {
+                crop: "Tomatoes",
+                wasteType: "Bruised / Overripe Batches",
+                output: "Tomato Paste & Puree Base",
+                complexity: "Low",
+                revenue: "$180 / Ton",
+                buyers: "Local Sauces & Puree Packers Co-op",
+                desc: "High moisture overripe tomatoes are blended and thermal-processed to eliminate mold risk while yielding high-brix paste."
+            },
+            {
+                crop: "Tomatoes",
+                wasteType: "Seeds & Skins residue",
+                output: "Lycopene Powder & Pectin Extract",
+                complexity: "Industrial",
+                revenue: "$450 / Ton",
+                buyers: "Nutraceutical & Cosmetics Extractors",
+                desc: "Skins and seeds are rich in natural lycopene antioxidants and thickeners for food processing."
+            },
+            {
+                crop: "Mangoes",
+                wasteType: "Rejected / B-Grade Fruit",
+                output: "Dehydrated Mango Strips & Leather",
+                complexity: "Medium",
+                revenue: "$320 / Ton",
+                buyers: "Snack Foods & Organic Retailers",
+                desc: "Solar drying or cabinet dehydration converts excess harvest into long-shelf-life snack products."
+            },
+            {
+                crop: "Mangoes",
+                wasteType: "Peels & Seeds",
+                output: "Bio-gas Methane & Pectin Gel",
+                complexity: "Low",
+                revenue: "$90 / Ton",
+                buyers: "Regional Bio-energy Facility",
+                desc: "Anaerobic digestion converts high-sugar peels into clean fuel gas."
+            },
+            {
+                crop: "Potatoes",
+                wasteType: "Sprouted or Bruised Tubers",
+                output: "Industrial Starch Extraction",
+                complexity: "Medium",
+                revenue: "$210 / Ton",
+                buyers: "Paper & Packaging Glue Manufacturers",
+                desc: "Mechanical washing and grinding extracts native starch for non-food industrial uses."
+            },
+            {
+                crop: "Strawberries",
+                wasteType: "Soft Fruit Waste",
+                output: "Natural Red Dye & Fermented Cider",
+                complexity: "Medium",
+                revenue: "$280 / Ton",
+                buyers: "Craft Breweries & Natural Textile Dyers",
+                desc: "Juiced residue provides rich anthocyanin natural coloring and fermentable sugars."
+            }
+        ];
+
+        let currentActiveBatchCandidate = null;
+        let riskChartInstance = null;
+        let ambientChartInstance = null;
+
+        /* ================= WINDOW LOAD & INITIALIZATION ================= */
+        window.onload = function() {
+            lucide.createIcons();
+            initCharts();
+            renderDashboard();
+            renderWasteCatalog();
+            renderHistoryTable();
+            runCalculator();
+        };
+
+        /* ================= NAVIGATION TAB SWITCHING ================= */
+        function switchTab(tabId) {
+            // Hide all pages
+            document.querySelectorAll('.page-section').forEach(p => p.classList.add('hidden'));
+            
+            // Show target page
+            const target = document.getElementById('page-' + tabId);
+            if (target) target.classList.remove('hidden');
+
+            // Update nav button active states
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-brand-700', 'bg-brand-50', 'font-bold');
+            });
+            const activeBtn = document.getElementById('nav-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.add('text-brand-700', 'bg-brand-50', 'font-bold');
+            }
+
+            // Refresh charts or visual elements if necessary
+            if (tabId === 'dashboard') {
+                renderDashboard();
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        /* ================= DASHBOARD RENDERING ================= */
+        function renderDashboard() {
+            // Compute stats
+            let totalQty = sampleBatches.reduce((acc, b) => acc + Number(b.quantity), 0);
+            let highRisk = sampleBatches.filter(b => b.riskLevel === 'HIGH').length;
+            let medRisk = sampleBatches.filter(b => b.riskLevel === 'MEDIUM').length;
+            let lowRisk = sampleBatches.filter(b => b.riskLevel === 'LOW').length;
+
+            document.getElementById('dash-stat-total-qty').innerHTML = totalQty.toLocaleString() + ' <span class="text-xs font-normal text-slate-500">kg</span>';
+            document.getElementById('dash-stat-high').innerText = highRisk;
+            document.getElementById('dash-stat-medium').innerText = medRisk;
+            document.getElementById('dash-stat-low').innerText = lowRisk;
+
+            // Render Priority Banners for HIGH risk items
+            const alertsContainer = document.getElementById('priority-alerts-container');
+            const highRiskBatches = sampleBatches.filter(b => b.riskLevel === 'HIGH');
+            
+            if (highRiskBatches.length > 0) {
+                alertsContainer.innerHTML = highRiskBatches.map(b => `
+                    <div class="bg-red-50 border border-red-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <span class="p-2 bg-red-100 text-red-600 rounded-xl"><i data-lucide="alert-octagon" class="w-5 h-5"></i></span>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="font-bold text-slate-900 text-sm">URGENT ACTION NEEDED: ${b.crop} (${b.id})</h4>
+                                    <span class="text-[10px] bg-red-600 text-white font-bold px-2 py-0.5 rounded-full">${b.recommendation}</span>
+                                </div>
+                                <p class="text-xs text-slate-600">${b.quantity.toLocaleString()} kg in ${b.storage} • Est. shelf life ${b.shelfLife}</p>
+                            </div>
+                        </div>
+                        <button onclick="openBatchDetail('${b.id}')" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-colors shrink-0">
+                            View Salvage Plan
+                        </button>
+                    </div>
+                `).join('');
+            } else {
+                alertsContainer.innerHTML = `<div class="p-4 bg-brand-50 border border-brand-200 rounded-2xl text-xs text-brand-800 font-medium">✅ All active crop batches operating within optimal climate ranges.</div>`;
+            }
+
+            // Render Recent Batches Grid
+            const grid = document.getElementById('recent-batches-grid');
+            grid.innerHTML = sampleBatches.slice(0, 6).map(b => {
+                let badgeColor = b.riskLevel === 'HIGH' ? 'bg-red-100 text-red-700 border-red-200' :
+                                (b.riskLevel === 'MEDIUM' ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-brand-100 text-brand-700 border-brand-200');
+                
+                let recIcon = b.recommendation === 'SELL NOW' ? 'dollar-sign' : (b.recommendation === 'PROCESS FIRST' ? 'cog' : 'snowflake');
+
+                return `
+                    <div class="bg-slate-50 hover:bg-slate-100/80 transition-all p-4 rounded-2xl border border-slate-200/80 flex flex-col justify-between space-y-4">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <span class="text-[10px] font-mono font-bold text-slate-400">${b.id}</span>
+                                <h4 class="font-bold text-slate-900 text-base">${b.crop}</h4>
+                                <span class="text-xs text-slate-500">${b.quantity.toLocaleString()} kg</span>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border ${badgeColor}">
+                                ${b.riskScore}% ${b.riskLevel}
+                            </span>
+                        </div>
+
+                        <div class="space-y-1.5 text-xs text-slate-600">
+                            <div class="flex justify-between">
+                                <span>Storage:</span>
+                                <span class="font-semibold text-slate-800">${b.storage}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Temp / Hum:</span>
+                                <span class="font-semibold text-slate-800">${b.temp}°C / ${b.humidity}%</span>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 border-t border-slate-200 flex items-center justify-between">
+                            <div class="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                                <i data-lucide="${recIcon}" class="w-4 h-4 text-brand-600"></i> ${b.recommendation}
+                            </div>
+                            <button onclick="openBatchDetail('${b.id}')" class="text-xs font-semibold text-brand-600 hover:text-brand-800">
+                                Details
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+            updateChartData(highRisk, medRisk, lowRisk);
+        }
+
+        /* Chart initialization */
+        function initCharts() {
+            // Doughnut Chart
+            const ctx1 = document.getElementById('chart-risk-doughnut').getContext('2d');
+            riskChartInstance = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['High Risk', 'Medium Risk', 'Low Risk'],
+                    datasets: [{
+                        data: [3, 4, 5],
+                        backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+                    },
+                    cutout: '70%'
+                }
+            });
+
+            // Ambient Trend Chart
+            const ctx2 = document.getElementById('chart-ambient-trend').getContext('2d');
+            ambientChartInstance = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: ['06:00', '09:00', '12:00', '15:00', '18:00', '21:00'],
+                    datasets: [
+                        {
+                            label: 'Avg Storage Temp (°C)',
+                            data: [21, 25, 31, 29, 26, 23],
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Relative Humidity (%)',
+                            data: [70, 75, 84, 82, 78, 72],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'transparent',
+                            borderDash: [5, 5],
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 } } },
+                        x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        function updateChartData(high, med, low) {
+            if (riskChartInstance) {
+                riskChartInstance.data.datasets[0].data = [high, med, low];
+                riskChartInstance.update();
+            }
+        }
+
+        function refreshDashboard() {
+            renderDashboard();
+            showToast("Dashboard metrics synced with neural sensors!");
+        }
+
+        /* ================= ADD BATCH PRESETS & HANDLERS ================= */
+        function applyPreset(presetType) {
+            if (presetType === 'tomato-high') {
+                document.getElementById('input-crop').value = 'Tomatoes';
+                document.getElementById('input-quantity').value = 3200;
+                document.getElementById('input-storage').value = 'Ambient Warehouse';
+                document.getElementById('input-temp').value = 32;
+                document.getElementById('temp-val-display').innerText = '32°C';
+                document.getElementById('input-humidity').value = 88;
+                document.getElementById('humidity-val-display').innerText = '88%';
+                document.getElementById('input-transport').value = 28;
+                document.getElementById('input-demand').value = 'Market Glut / Over-supplied';
+            } else if (presetType === 'mango-cold') {
+                document.getElementById('input-crop').value = 'Mangoes';
+                document.getElementById('input-quantity').value = 5000;
+                document.getElementById('input-storage').value = 'Cold Storage';
+                document.getElementById('input-temp').value = 11;
+                document.getElementById('temp-val-display').innerText = '11°C';
+                document.getElementById('input-humidity').value = 60;
+                document.getElementById('humidity-val-display').innerText = '60%';
+                document.getElementById('input-transport').value = 10;
+                document.getElementById('input-demand').value = 'High Demand';
+            } else if (presetType === 'spinach-moist') {
+                document.getElementById('input-crop').value = 'Spinach';
+                document.getElementById('input-quantity').value = 900;
+                document.getElementById('input-storage').value = 'Shaded Shed';
+                document.getElementById('input-temp').value = 26;
+                document.getElementById('temp-val-display').innerText = '26°C';
+                document.getElementById('input-humidity').value = 95;
+                document.getElementById('humidity-val-display').innerText = '95%';
+                document.getElementById('input-transport').value = 14;
+                document.getElementById('input-demand').value = 'Moderate';
+            }
+            showToast("Preset loaded into form!");
+        }
+
+        function handleImageUpload(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('preview-img').src = e.target.result;
+                    document.getElementById('upload-placeholder').classList.add('hidden');
+                    document.getElementById('upload-preview').classList.remove('hidden');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        /* ================= AI ANALYSIS SUBMIT & SIMULATION ================= */
+        function handleAnalyzeSubmit(e) {
+            e.preventDefault();
+
+            const crop = document.getElementById('input-crop').value;
+            const quantity = Number(document.getElementById('input-quantity').value);
+            const date = document.getElementById('input-date').value || new Date().toISOString().split('T')[0];
+            const storage = document.getElementById('input-storage').value;
+            const temp = Number(document.getElementById('input-temp').value);
+            const humidity = Number(document.getElementById('input-humidity').value);
+            const transportHours = Number(document.getElementById('input-transport').value);
+            const demand = document.getElementById('input-demand').value;
+
+            // SIMULATE AI COMPUTATION ALGORITHM
+            let riskScore = 20; // base score
+
+            // Temperature impact
+            if (temp > 25) riskScore += (temp - 25) * 3.5;
+            // Humidity impact
+            if (humidity > 80) riskScore += (humidity - 80) * 1.5;
+            // Crop factor
+            if (['Strawberries', 'Spinach', 'Tomatoes'].includes(crop)) riskScore += 15;
+            // Storage factor
+            if (storage === 'Ambient Warehouse' || storage === 'Open Air Truck') riskScore += 12;
+            if (storage === 'Cold Storage') riskScore -= 25;
+
+            // Cap risk score between 5 and 98
+            riskScore = Math.min(98, Math.max(5, Math.round(riskScore)));
+
+            let riskLevel = riskScore >= 70 ? 'HIGH' : (riskScore >= 40 ? 'MEDIUM' : 'LOW');
+            
+            // Determine Recommendation
+            let recommendation = 'STORE';
+            if (riskLevel === 'HIGH') {
+                recommendation = (demand === 'High Demand') ? 'SELL NOW' : 'PROCESS FIRST';
+            } else if (riskLevel === 'MEDIUM') {
+                recommendation = (transportHours > 20) ? 'PROCESS FIRST' : 'SELL NOW';
+            }
+
+            // Shelf life prediction
+            let shelfLife = '10-14 Days';
+            if (riskScore > 80) shelfLife = '24-48 Hours';
+            else if (riskScore > 60) shelfLife = '3-5 Days';
+            else if (riskScore > 40) shelfLife = '6-8 Days';
+
+            // Generate root causes
+            let causes = [];
+            if (temp > 25) causes.push(`Elevated storage temperature (${temp}°C) accelerates respiration rate.`);
+            if (humidity > 80) causes.push(`High ambient humidity (${humidity}%) promotes fungal mold formation.`);
+            if (transportHours > 18) causes.push(`Transit duration of ${transportHours} hrs exceeds optimal fresh shelf buffer.`);
+            if (causes.length === 0) causes.push("Optimal storage climate maintained with low decay indicators.");
+
+            // Create new batch record
+            const newBatchId = 'AG-' + Math.floor(1000 + Math.random() * 9000);
+            currentActiveBatchCandidate = {
+                id: newBatchId,
+                crop: crop,
+                quantity: quantity,
+                harvestDate: date,
+                storage: storage,
+                temp: temp,
+                humidity: humidity,
+                transportHours: transportHours,
+                demand: demand,
+                riskScore: riskScore,
+                riskLevel: riskLevel,
+                shelfLife: shelfLife,
+                recommendation: recommendation,
+                causes: causes,
+                logDate: new Date().toISOString().split('T')[0],
+                status: "Pending Action"
+            };
+
+            // Open Modal with Simulated Processing
+            showResultModal(currentActiveBatchCandidate);
+        }
+
+        function showResultModal(batch) {
+            const modal = document.getElementById('modal-result');
+            const loading = document.getElementById('res-loading');
+            const content = document.getElementById('res-content');
+
+            modal.classList.remove('hidden');
+            loading.classList.remove('hidden');
+            content.classList.add('hidden');
+
+            document.getElementById('res-batch-id').innerText = batch.id;
+            document.getElementById('res-title').innerText = `${batch.crop} Consignment Evaluation`;
+            document.getElementById('res-subtitle').innerText = `Quantity: ${batch.quantity.toLocaleString()} kg • Storage: ${batch.storage}`;
+
+            // Simulated AI processing progression text
+            const steps = [
+                "Scanning microclimate temperature sensors...",
+                "Evaluating crop decay kinetics...",
+                "Cross-referencing regional market demand...",
+                "Formulating optimal Second Harvest pathway..."
+            ];
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i < steps.length) {
+                    document.getElementById('res-loading-text').innerText = steps[i];
+                    i++;
+                } else {
+                    clearInterval(interval);
+                    populateModalContent(batch);
+                }
+            }, 400);
+        }
+
+        function populateModalContent(batch) {
+            document.getElementById('res-loading').classList.add('hidden');
+            document.getElementById('res-content').classList.remove('hidden');
+
+            document.getElementById('res-risk-score-num').innerText = batch.riskScore + '%';
+            document.getElementById('res-shelf-life').innerText = batch.shelfLife;
+            document.getElementById('res-confidence').innerText = (90 + Math.random() * 8).toFixed(1) + '%';
+
+            // Badge styling
+            const badge = document.getElementById('res-risk-badge');
+            badge.innerText = batch.riskLevel + ' RISK';
+            if (batch.riskLevel === 'HIGH') {
+                badge.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200";
+            } else if (batch.riskLevel === 'MEDIUM') {
+                badge.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700 border border-amber-200";
+            } else {
+                badge.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-brand-100 text-brand-700 border border-brand-200";
+            }
+
+            // Hero Card dynamic styling
+            const card = document.getElementById('res-rec-card');
+            const actionText = document.getElementById('res-rec-action');
+            const descText = document.getElementById('res-rec-description');
+
+            if (batch.recommendation === 'SELL NOW') {
+                card.className = "p-6 rounded-2xl border-2 bg-red-50 border-red-200 text-red-950";
+                actionText.innerHTML = `<i data-lucide="dollar-sign" class="w-6 h-6 text-red-600"></i> SELL NOW`;
+                descText.innerText = "Crucial fresh window expiring soon. Immediately sell to local markets or quick-turnaround buyers to avoid total loss.";
+            } else if (batch.recommendation === 'PROCESS FIRST') {
+                card.className = "p-6 rounded-2xl border-2 bg-amber-50 border-amber-200 text-amber-950";
+                actionText.innerHTML = `<i data-lucide="cog" class="w-6 h-6 text-amber-600"></i> PROCESS FIRST`;
+                descText.innerText = "Divert immediately to secondary processing (juicing, drying, pectin extraction) to lock in yield value.";
+            } else {
+                card.className = "p-6 rounded-2xl border-2 bg-brand-50 border-brand-200 text-brand-950";
+                actionText.innerHTML = `<i data-lucide="snowflake" class="w-6 h-6 text-brand-600"></i> STORE`;
+                descText.innerText = "Crop condition is stable. Continue holding in cold-chain storage to capture optimal market price timing.";
+            }
+
+            // Render causes
+            const causesContainer = document.getElementById('res-causes-list');
+            causesContainer.innerHTML = batch.causes.map(c => `
+                <div class="flex items-start gap-2 text-xs text-slate-700 bg-slate-100/70 p-2.5 rounded-xl">
+                    <i data-lucide="alert-circle" class="w-4 h-4 text-slate-500 shrink-0 mt-0.5"></i>
+                    <span>${c}</span>
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        function closeResultModal() {
+            document.getElementById('modal-result').classList.add('hidden');
+        }
+
+        function saveAndGoToDashboard() {
+            if (currentActiveBatchCandidate) {
+                sampleBatches.unshift(currentActiveBatchCandidate);
+                currentActiveBatchCandidate = null;
+            }
+            closeResultModal();
+            renderDashboard();
+            renderHistoryTable();
+            switchTab('dashboard');
+            showToast("Batch successfully saved to active monitoring!");
+        }
+
+        function openBatchDetail(id) {
+            const batch = sampleBatches.find(b => b.id === id);
+            if (batch) {
+                currentActiveBatchCandidate = batch;
+                showResultModal(batch);
+            }
+        }
+
+        /* ================= WASTE MATCHER ENGINE ================= */
+        function renderWasteCatalog(filterCrop = 'ALL', query = '') {
+            const grid = document.getElementById('waste-catalog-grid');
+            
+            let filtered = wastePathways;
+            if (filterCrop !== 'ALL') {
+                filtered = filtered.filter(p => p.crop === filterCrop);
+            }
+            if (query.trim() !== '') {
+                filtered = filtered.filter(p => 
+                    p.crop.toLowerCase().includes(query.toLowerCase()) || 
+                    p.output.toLowerCase().includes(query.toLowerCase()) ||
+                    p.desc.toLowerCase().includes(query.toLowerCase())
+                );
+            }
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-3 text-center py-12 text-slate-400">No matching waste upcycling pathways found.</div>`;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(p => `
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 flex flex-col justify-between hover:shadow-md transition-shadow">
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2.5 py-1 bg-earth-50 text-earth-800 text-[11px] font-bold rounded-lg border border-earth-200">
+                                ${p.crop} Residue
+                            </span>
+                            <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                                ${p.revenue}
+                            </span>
+                        </div>
+
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-lg">${p.output}</h3>
+                            <p class="text-xs font-medium text-slate-500 mt-0.5">Input: ${p.wasteType}</p>
+                        </div>
+
+                        <p class="text-xs text-slate-600 leading-relaxed">${p.desc}</p>
+                    </div>
+
+                    <div class="pt-4 mt-4 border-t border-slate-100 space-y-2 text-xs">
+                        <div class="flex justify-between text-slate-500">
+                            <span>Process Complexity:</span>
+                            <span class="font-bold text-slate-800">${p.complexity}</span>
+                        </div>
+                        <div class="flex justify-between text-slate-500">
+                            <span>Target Buyer Match:</span>
+                            <span class="font-bold text-brand-700 truncate max-w-[160px]">${p.buyers}</span>
+                        </div>
+                        <button onclick="openCalculatorModal()" class="w-full mt-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold py-2 rounded-xl transition-colors flex items-center justify-center gap-1.5">
+                            <i data-lucide="calculator" class="w-3.5 h-3.5"></i> Calculate Revenue Potential
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        function filterWaste(crop) {
+            document.querySelectorAll('.waste-filter-btn').forEach(btn => {
+                btn.className = "waste-filter-btn px-3 py-2 rounded-xl font-medium bg-slate-100 text-slate-700 hover:bg-slate-200";
+            });
+            const activeBtn = document.getElementById('wf-' + crop);
+            if (activeBtn) activeBtn.className = "waste-filter-btn px-3 py-2 rounded-xl font-medium bg-brand-600 text-white";
+
+            renderWasteCatalog(crop, document.getElementById('waste-search').value);
+        }
+
+        function searchWasteCards() {
+            const q = document.getElementById('waste-search').value;
+            renderWasteCatalog('ALL', q);
+        }
+
+        function goToWasteMatcherWithCrop() {
+            closeResultModal();
+            switchTab('waste-matcher');
+            if (currentActiveBatchCandidate) {
+                filterWaste(currentActiveBatchCandidate.crop);
+            }
+        }
+
+        /* Calculator Modal functions */
+        function openCalculatorModal() {
+            document.getElementById('modal-calc').classList.remove('hidden');
+        }
+        function closeCalculatorModal() {
+            document.getElementById('modal-calc').classList.add('hidden');
+        }
+        function runCalculator() {
+            const tons = Number(document.getElementById('calc-tons').value) || 1;
+            const rate = Number(document.getElementById('calc-recipe').value) || 180;
+            const total = (tons * rate).toFixed(2);
+            document.getElementById('calc-result-val').innerText = '$' + Number(total).toLocaleString();
+        }
+
+        /* ================= HISTORY TABLE & EXPORT ================= */
+        function renderHistoryTable() {
+            const tbody = document.getElementById('history-table-body');
+            const riskFilter = document.getElementById('history-filter-risk').value;
+            const query = document.getElementById('history-search').value.toLowerCase();
+
+            let data = sampleBatches;
+
+            if (riskFilter !== 'ALL') {
+                data = data.filter(b => b.riskLevel === riskFilter);
+            }
+
+            if (query.trim() !== '') {
+                data = data.filter(b => 
+                    b.id.toLowerCase().includes(query) ||
+                    b.crop.toLowerCase().includes(query) ||
+                    b.recommendation.toLowerCase().includes(query)
+                );
+            }
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-slate-400">No batch historical logs matching filter.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = data.map(b => {
+                let badgeClass = b.riskLevel === 'HIGH' ? 'bg-red-100 text-red-700' :
+                                (b.riskLevel === 'MEDIUM' ? 'bg-amber-100 text-amber-700' : 'bg-brand-100 text-brand-700');
+
+                return `
+                    <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td class="p-4 font-mono font-bold text-slate-900">${b.id}</td>
+                        <td class="p-4 font-bold text-slate-800">${b.crop}</td>
+                        <td class="p-4">${b.quantity.toLocaleString()} kg</td>
+                        <td class="p-4 text-slate-500">${b.temp}°C / ${b.humidity}%</td>
+                        <td class="p-4">
+                            <span class="px-2 py-0.5 rounded-full font-bold ${badgeClass}">
+                                ${b.riskScore}% ${b.riskLevel}
+                            </span>
+                        </td>
+                        <td class="p-4 font-bold text-slate-800">${b.recommendation}</td>
+                        <td class="p-4 text-slate-500">${b.logDate}</td>
+                        <td class="p-4"><span class="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md text-[10px] font-semibold">${b.status}</span></td>
+                        <td class="p-4 text-right">
+                            <button onclick="openBatchDetail('${b.id}')" class="text-brand-600 hover:text-brand-800 font-bold">
+                                View Report
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function exportToCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Batch ID,Crop,Quantity (kg),Temp (C),Humidity (%),Risk Level,Risk Score,Recommendation,Log Date\n";
+
+            sampleBatches.forEach(b => {
+                csvContent += `${b.id},${b.crop},${b.quantity},${b.temp},${b.humidity},${b.riskLevel},${b.riskScore},${b.recommendation},${b.logDate}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `AgriCycle_AI_Loss_Report_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast("CSV History report exported!");
+        }
+
+        /* Toast notification helper */
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl text-xs font-medium flex items-center gap-2 animate-bounce';
+            toast.innerHTML = `<i data-lucide="info" class="w-4 h-4 text-brand-400"></i> ${msg}`;
+            document.body.appendChild(toast);
+            lucide.createIcons();
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+</html>
